@@ -1,0 +1,638 @@
+---
+title: 'Final Report: Project - Student acheivement'
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+
+
+# 1 Project motivation
+Student performance is a critical area for higher education and in this project we will review the variables associated with improving student performance. Various features are available in the UCI dataset including student grades, demographic, social and school related features (33 other features) and it was collected by using school reports and questionnaires  to be able to identify if this student is likely to pass or fail his exam (see
+https://archive.ics.uci.edu/ml/datasets/student+performance). The dataset is obtained from two subject area namely Mathematics and Portuguese.
+\\The problem that we are trying to solve is to indicate variable or variables that are most significant for a student performance and to cluster or determine the students who are most likely to have success in their exams. This analysis will be important for retention of students and determining students most at risk as well as the needed support for those students. As an example when we have students who are showing a weaker social structure, additional support for that student by the school administration could be applied to improve the student performance. This analysis may be able to determine the different types of teaching strategies for students and the type of modality that is needed for optimal learning.
+
+Traditional approaches have used logistic regression and in this project, random forests, partial dependence plots, K-means and Gaussian mixed methods were utilized. The random forest was created to determine the decision rules and most important variables in determining the student success. The partial dependence plot was used shows the marginal effect one or two features have on the predicted outcome namely the student score. K-means was used to create clusters using unsupervised learning to place the students into 4 groups in terms of scores (0-5,6-10,11-15 and 16-20).
+
+
+## 1.1 Objectives
+The first hypothesis is that there are some variables that may be significant in determining student success such as strong social structure, extra lessons, extra educational activities. The second hypothesis is by identifying those variables and reducing the number of variables a clustering algorithm could be applied to categorize the students into groups such as students likely to get an A,B,C or D.
+
+The specific objectives of this project is to:
+\ 1. Determine the variables in the dataset that are most significant in determining if a student will pass Portuguese or Math.
+\ 2. Creation of model to determine cluster of students into 4 groups, students based on grades namely D,C,B,A (0-5,6-10,11-15 and 16-20) respectively.
+
+## 1.2 Explanation of dataset
+There are various features available in the UCI dataset including student grades, demographic, social and school related features (33 other features per file) and it was collected by using school reports and questionnaires  to be able to identify if a student is likely to pass or fail his exam. When the datasets were joined the following is the dataset information. \
+Number of variables	55  \
+Number of observations	382 \
+Missing cells	0  \
+Missing cells (%)	0.0%  \
+Duplicate rows	0 \
+Duplicate rows (%)	0.0%  \
+Total size in memory	164.3 KiB  \
+Average record size in memory	440.3 B  \
+Variable types  \
+
+Categorical	32  \
+Numeric	9  \
+Boolean	14 \
+
+The following are the attributes in the data and the metadata information:
+Attributes for both student-mat.csv (Math course) and student-por.csv (Portuguese language course) datasets:\
+1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) \
+2 sex - student's sex (binary: 'F' - female or 'M' - male) \
+3 age - student's age (numeric: from 15 to 22) \
+4 address - student's home address type (binary: 'U' - urban or 'R' - rural) \
+5 famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) \
+6 Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart) \
+7 Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2  5th to 9th grade, 3  secondary education or 4  higher education)  \
+8 Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2  5th to 9th grade, 3 secondary education or 4 higher education)  \
+9 Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at\_home' or 'other')  \
+10 Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at\_home' or 'other')  \
+11 reason - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other') \
+12 guardian - student's guardian (nominal: 'mother', 'father' or 'other') \
+13 traveltime - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) \
+14 studytime - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) \
+15 failures - number of past class failures (numeric: n if 1<=n<3, else 4) \
+16 schoolsup - extra educational support (binary: yes or no) \
+17 famsup - family educational support (binary: yes or no) \
+18 paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) \
+19 activities - extra-curricular activities (binary: yes or no) \
+20 nursery - attended nursery school (binary: yes or no) \
+21 higher - wants to take higher education (binary: yes or no) \
+22 internet - Internet access at home (binary: yes or no) \
+23 romantic - with a romantic relationship (binary: yes or no) \
+24 famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) \
+25 freetime - free time after school (numeric: from 1 - very low to 5 - very high) \
+26 goout - going out with friends (numeric: from 1 - very low to 5 - very high) \
+27 Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) \
+28 Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) \
+29 health - current health status (numeric: from 1 - very bad to 5 - very good) \
+30 absences - number of school absences (numeric: from 0 to 93) \
+
+
+
+# 2. Data preparation procedure and exploratory analysis
+## 2.1 Data Procedure
+The data preparation procedure first included the importing of the student math and student portugese information into one data frame. The data associated with was first loaded into a math and portugese data frames. The information set was then merged based on demographics based information associated.  This created a consolidated dataset with merged information to create various statistical inferences. The data was separated into train and validation with a rule of 75% of the sample in train and 25% in validation.
+
+## 2.2 Data Quality, missing values and treatment of categorical variables
+There were no missing data fields and the data quality was excellent.  There are a number of categorical variables each were converted using one hot encoding. The response variable (final grade (numeric: from 0 to 20)) which is if the person pass or failed was calculated based on pass if G3 >= 10, else fail.  Since the information contains both the grades for Math and Portuguese large, the response variable was create Pass_Fail_Por and Pass_Fail_Math. For the clustering analysis we also converted the grades into the four categories namely 1-4 depending on the ranges (0-5,6-10,11-15 and 16-20).
+
+The exploratory data analysis was completed using python (see EDA document attached) and the dataset statistics is shown below as well as the summary statistics associated.
+
+### 2.2.1 Dataset statistics  \
+
+Number of variables	55  \
+Number of observations	382 \
+Missing cells	0  \
+Missing cells (%)	0.0%  \
+Duplicate rows	0 \
+Duplicate rows (%)	0.0%  \
+Total size in memory	164.3 KiB  \
+Average record size in memory	440.3 B  \
+Variable types  \
+
+Categorical	32  \
+Numeric	9  \
+Boolean	14 \
+
+```{r data_prep}
+d1_math=read.table("student-mat.csv",sep=";",header=TRUE)
+d2_por=read.table("student-por.csv",sep=";",header=TRUE)
+
+d_consolidated=merge(d1_math,d2_por,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+print(nrow(d_consolidated)) # 382 students
+
+head(d_consolidated)
+
+d_consolidated$Pass_Fail_Por <- as.factor(ifelse(d_consolidated$G3.y < 10, 0, 1))
+
+d_consolidated$Pass_Fail_Math <- as.factor(ifelse(d_consolidated$G3.x < 10, 0, 1))
+
+d_consolidated$sex <- as.factor(ifelse(d_consolidated$sex=='F', 0, 1))
+
+d_consolidated$address <- as.factor(ifelse(d_consolidated$address=='U', 0, 1))
+
+d_consolidated$famsize <- as.factor(ifelse(d_consolidated$famsize=='GT3', 0, 1))
+
+d_consolidated$Pstatus <- as.factor(ifelse(d_consolidated$Pstatus=='T', 0, 1))
+
+#nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other'
+d_consolidated$Mjob <- as.factor(ifelse(d_consolidated$Mjob == 'teacher', 0,
+                          ifelse(d_consolidated$Mjob == 'healther', 1, 
+                          ifelse(d_consolidated$Mjob == 'serivces', 2, 
+                           ifelse(d_consolidated$Mjob == 'at_home', 3,4)))))
+
+d_consolidated$Fjob <- as.factor(ifelse(d_consolidated$Fjob == 'teacher', 0,
+                          ifelse(d_consolidated$Fjob == 'healther', 1, 
+                          ifelse(d_consolidated$Fjob == 'serivces', 2, 
+                           ifelse(d_consolidated$Fjob == 'at_home', 3,4)))))
+
+#reason - reason to choose this school (nominal: close to 'home', school 'reputation', 'course' preference or 'other')
+d_consolidated$reason <- as.factor(ifelse(d_consolidated$reason == 'home', 0,
+                          ifelse(d_consolidated$reason == 'reputation', 1, 
+                          ifelse(d_consolidated$reason == 'course', 2, 
+                           ifelse(d_consolidated$reason == 'other', 3,4)))))
+
+
+#d_consolidated
+
+#write.csv(d_consolidated,"d_consolidated", row.names = FALSE)
+
+summary(d_consolidated)
+
+train_sample = sample(1:nrow(d_consolidated), size=nrow(d_consolidated)*.75, replace=FALSE)
+d_consolidated_val = d_consolidated[-train_sample,]
+d_consolidated = d_consolidated[train_sample,]
+
+
+mylogit_Math <- glm(Pass_Fail_Math ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.x+traveltime.x+studytime.x+failures.x+schoolsup.x+famsup.x + paid.x   + activities.x +higher.x + romantic.x +   famrel.x   +   freetime.x   +    goout.x        +Dalc.x + Walc.x   +     health.x    +   absences.x     +     G1.x       +     G2.x+Pass_Fail_Por, data = d_consolidated, family = "binomial")
+
+summary(mylogit_Math)
+
+mylogit_Por <- glm(Pass_Fail_Por ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.y+traveltime.y+studytime.y+failures.y+schoolsup.y+famsup.y + paid.y   + activities.y +higher.y + romantic.y +   famrel.y   +   freetime.y   +    goout.y        +Dalc.y + Walc.y   +     health.y    +   absences.y     +     G1.y      +     G2.y, data = d_consolidated, family = "binomial")
+
+summary(mylogit_Por)
+
+# library
+library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(tidyverse)
+library(viridis)
+
+
+
+
+
+
+
+d_consolidated %>%
+  ggplot( aes(x=Pass_Fail_Por, y=age)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("A boxplot Por Pass Fail by age") +
+    xlab("")
+
+d_consolidated %>%
+  ggplot( aes(x=Pass_Fail_Math, y=age)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("A boxplot Math Pass Fail by age") +
+    xlab("")
+
+
+```
+```{r summary_stats}
+library(corrplot)
+
+head(d_consolidated)
+
+summary(d_consolidated)
+
+mylogit_Math <- glm(Pass_Fail_Math ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.x+traveltime.x+studytime.x+failures.x+schoolsup.x+famsup.x + paid.x   + activities.x +higher.x + romantic.x +   famrel.x   +   freetime.x   +    goout.x        +Dalc.x + Walc.x   +     health.x    +   absences.x     +     G1.x       +     G2.x+Pass_Fail_Por, data = d_consolidated, family = "binomial")
+
+summary(mylogit_Math)
+
+mylogit_Por <- glm(Pass_Fail_Por ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.y+traveltime.y+studytime.y+failures.y+schoolsup.y+famsup.y + paid.y   + activities.y +higher.y + romantic.y +   famrel.y   +   freetime.y   +    goout.y        +Dalc.y + Walc.y   +     health.y    +   absences.y     +     G1.y      +     G2.y+Pass_Fail_Math, data = d_consolidated, family = "binomial")
+
+summary(mylogit_Por)
+
+
+
+
+
+```
+
+
+
+# 3. Statistics Investigations and models
+
+## 3.0 Cart Variable Importance
+```{r}
+#library(mlbench)
+library(caret)
+
+data(d_consolidated)
+# prepare training scheme
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- caret::train(G3.x~sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.x+traveltime.x+studytime.x+failures.x+schoolsup.x+famsup.x + paid.x   + activities.x +higher.x + romantic.x +   famrel.x   +   freetime.x   +    goout.x        +Dalc.x + Walc.x   +     health.x    +   absences.x     +     G1.x       +     G2.x, data=d_consolidated, method="rf", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+
+```
+
+
+## 3.1 Preliminary Statistics Investigations
+
+Based on the EDA stage the following Spearman correlation matrix was produced using Python.  This is showing some correlation between the first tests and the finals.  Additionally there are is some correlation with the Mother's education, health and consumption of alcohol for the Math independent variables. For the Portuguese data, the Mother's education, health and consumption of alcohol.  
+
+The logistic regression was created for both Math and Portuguese.  For the Math variables, the significant variables are age, famsize, Father education, Mother job, reason for the school, study time, romantic and family relation, alcohol consumption.
+For the Portuguese variables, past failures, alcohol consumption and the desire for higher education. This logistic regression was done to find the variables that are significant to reduce the model variables.  In addition, the Math variable was added to the Portuguese to see if it is significant in determining the Portuguese score.  The Portuguese variable was added to the Math model as well, however, both show no significancy.
+
+The reason rationale for using logistics regression in this analysis is because of the outcome variable is binary based on the data transformation. The PDP was used on two variables, to review the effect and that is shown below.
+
+
+
+## 3.2 Models
+## 3.2.1 Partial Dependence Plot (PDP)
+The partial dependence plot is used shows the marginal effect one or two features have on the predicted outcome.  In this analysis a PDP was for single variables as shown below.  This shows a relationship with the freetime for both the Math and Portuguese scores.
+
+```{r}
+# Load required packages
+library(randomForest)  # for fitting random forests
+library(pdp)           # for partial dependence plots
+library(vip)           # for variable importance plots
+
+# Fit a random forest to the Boston housing data
+set.seed(101)  # for reproducibility
+por_rf <- randomForest(Pass_Fail_Por ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.y+traveltime.y+studytime.y+failures.y+schoolsup.y+famsup.y + paid.y   + activities.y +higher.y + romantic.y +   famrel.y   +   freetime.y   +    goout.y        +Dalc.y + Walc.y   +     health.y    +   absences.y    +Pass_Fail_Math, data = d_consolidated, importance = TRUE)
+
+# Variable importance plot 
+vip(por_rf, bar = FALSE, horizontal = FALSE, size = 1.5) 
+
+partialPlot(por_rf, pred.data = d_consolidated, x.var = "freetime.y")  
+
+
+math_rf <- randomForest(Pass_Fail_Math ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.x+traveltime.x+studytime.x+failures.x+schoolsup.x+famsup.x + paid.x   + activities.x +higher.x + romantic.x +   famrel.x   +   freetime.x   +    goout.x        +Dalc.x + Walc.x   +     health.x    +   absences.x     +Pass_Fail_Por, data = d_consolidated, importance = TRUE)
+
+# Variable importance plot 
+vip(math_rf, bar = FALSE, horizontal = FALSE, size = 1.5) 
+
+partialPlot(math_rf, pred.data = d_consolidated, x.var = "freetime.x")
+
+```
+
+Multi-predictor PDPs was conducted using the freetime and absences variables, these are shown below. These graphs are showing a relationship with the freetime and absences variables. 
+```{r}
+# Compute partial dependence data for freetime and absences
+pd <- pdp::partial(por_rf, pred.var = c("freetime.y", "absences.y"))
+
+# Default PDP
+pdp1 <- plotPartial(pd)
+
+# Add contour lines and use a different color palette
+rwb <- colorRampPalette(c("red", "white", "blue"))
+pdp2 <- plotPartial(pd, contour = TRUE, col.regions = rwb)
+
+# 3-D surface
+pdp3 <- plotPartial(pd, levelplot = FALSE, zlab = "Pass_Fail", colorkey = TRUE, 
+                    screen = list(z = -20, x = -60))
+
+
+grid.arrange(pdp1, pdp2, pdp3, ncol = 3)
+
+# Compute partial dependence data for freetime and absences
+pd <- pdp::partial(math_rf, pred.var = c("freetime.x", "absences.x"))
+
+# Default PDP
+pdp1 <- plotPartial(pd)
+
+# Add contour lines and use a different color palette
+rwb <- colorRampPalette(c("green", "white", "blue"))
+pdp2 <- plotPartial(pd, contour = TRUE, col.regions = rwb)
+
+# 3-D surface
+pdp3 <- plotPartial(pd, levelplot = FALSE, zlab = "Pass_Fail", colorkey = TRUE, 
+                    screen = list(z = -20, x = -60))
+
+# Figure 5
+grid.arrange(pdp1, pdp2, pdp3, ncol = 3)
+
+```
+The PDP is shown at the side \
+
+## 3.2.2 Decision Trees
+
+A random forest was created as part of the analysis to review the decision rules associated and the variables that are important for determining if the student passes Math or Portuguese language. The decision tree created from the random forest were different in both cases. In the case of the Math both the Variable important plot and decision tree, showed that previous failure was a key variable in determine if a student passed or failed Math. This could be from the fact that when a study fails Math they gain some experience which makes them better at passing Math the next time. Other variables that are important in Math includes the freetime and absentism at school. In the case of Portuguese language studies, the most important variables are desire to continue to higher education, alcohol consumption and free time were important in determining the pass or fail in this subject area.
+
+The choice of the model of random forest was made to determine the important variables as well as easy to verify the results as decision trees allow easier explanations. One key issue was the hyperparameters for the tree pruning which was set to the following:  minsplit=10, maxdept=6 and xval=5.
+
+
+
+```{r}
+library(rpart)
+library(rattle)
+g_pruned_math = rpart(Pass_Fail_Math ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.x+traveltime.x+studytime.x+failures.x+schoolsup.x+famsup.x + paid.x   + activities.x +higher.x + romantic.x +   famrel.x   +   freetime.x   +    goout.x        +Dalc.x + Walc.x   +     health.x    +   absences.x     +Pass_Fail_Por, method="class", data=d_consolidated, 
+                    control=rpart.control(minsplit=10, maxdept=6,xval=5))
+
+
+
+# change plot margins (otherwise tree plot will not display fully)
+par(mar = c(2, 2, 2, 2))
+# cross-validation error plot
+#plotcp(g_pruned_math)
+# plot splits in decision tree
+#plot(g_pruned_math, uniform=TRUE, main="Classification Tree for Heart Disease")
+#text(g_pruned_math, use.n=TRUE, all=TRUE, cex=.8)
+#printcp(g_pruned_math)
+fancyRpartPlot(g_pruned_math,main="Classification tree for Math")
+
+
+g_pruned_por = rpart(Pass_Fail_Por ~ sex + age + address+famsize+Pstatus+Medu+Fedu+Mjob+Fjob+reason+nursery+internet+guardian.y+traveltime.y+studytime.y+failures.y+schoolsup.y+famsup.y + paid.y   + activities.y +higher.y + romantic.y +   famrel.y   +   freetime.y   +    goout.y        +Dalc.y + Walc.y   +     health.y    +   absences.y     +Pass_Fail_Math, method="class", data=d_consolidated,
+                    control=rpart.control(minsplit=10, maxdept=6,xval=5))
+
+
+
+# change plot margins (otherwise tree plot will not display fully)
+par(mar = c(2, 2, 2, 2))
+# cross-validation error plot
+#plotcp(g_pruned_math)
+# plot splits in decision tree
+#plot(g_pruned_math, uniform=TRUE, main="Classification Tree for Heart Disease")
+#text(g_pruned_math, use.n=TRUE, all=TRUE, cex=.8)
+#printcp(g_pruned_math)
+fancyRpartPlot(g_pruned_por,main="Classification tree for Portuguese Langauge")
+
+```
+Decision Trees \
+
+## 3.2.3 Unsupervised - K-means
+The unsupervised cluster was completed using K-means. This data was partitioned into four grades A-D for both Math and Language. The features were removed and only the most important features determiend from the previous steps were utilized. The k-means was created using 4 clusters and for the training set this was compared. Generally the results shows that K-means was able to categorize the clusters properly.
+
+```{r}
+library(cluster)
+# define a function to get the silhouette across different k
+silhouette_k_sweep = function(cluster_fn, df, max_k=15){
+  sil_scores = c()
+  loss_scores = c()
+  for(k in 2:max_k){
+    # build cluster model
+ #   print(paste0("K",k))
+  #  print(sil_scores)
+  #  print(loss_scores)
+    g_k = cluster_fn(df, k)
+   # print(g_k)
+    # get the loss for given value of k (requires different code for different cluster_fn)
+    if(identical(cluster_fn, kmeans)){
+   #   print("in here0")
+      loss_scores[k-1] = g_k$tot.withinss
+    } else if(identical(cluster_fn, pam)){
+  #    print("in here1")
+      loss_scores[k-1] = g_k$objective[1]
+    }else
+    {
+ #     print("in here2")
+      loss_scores[k-1]=g_k$objective[1]
+    }
+  #   print("in here4")
+    # get the silhoutte scores for all samples and average
+    if(identical(cluster_fn, kmeans)){
+       sil_scores[k-1] = mean(silhouette(g_k$cluster, dist(df))[,3])
+    } else if(identical(cluster_fn, pam)){
+      
+      t_predict <-predict(g_k)
+     # t_predict$classification
+     sil_scores[k-1] = mean(silhouette(t_predict$classification, dist(df))[,3])
+    }
+      
+   
+
+  }
+  # find the optimal k by find the max of the silhoutte scores
+  
+  opt_k_sil = which.max(sil_scores) + 1
+  return(list(loss_scores=loss_scores, sil_scores=sil_scores, opt_k_sil=opt_k_sil))
+}
+```
+
+
+```{r}
+
+library(vcd)     # For association plots
+library(readr)   # read_csv() is fast read facility
+#features_por = subset(d_consolidated, select=-c(G1.x,G2.x,G3.x,G1.y,G2.y,G3.y,Pass_Fail_Por,Pass_Fail_Math)) 
+
+features_por <- subset(d_consolidated, select=c(sex,address,famsize,absences.y,studytime.y,traveltime.y,freetime.y,failures.y)) 
+features_math <- subset(d_consolidated, select=c(sex,address,famsize,absences.x,studytime.x,traveltime.x,freetime.x,failures.x)) 
+#labels_por = subset(d_consolidated, select=c(Pass_Fail_Por)) 
+d_consolidated$labels_por <- ifelse(d_consolidated$G3.y <= 5, 1,
+                          ifelse(d_consolidated$G3.y <= 10 & d_consolidated$G3.y>5, 2, 
+                          ifelse(d_consolidated$G3.y <= 15 & d_consolidated$G3.y>10, 3, 
+                           ifelse(d_consolidated$G3.y <= 20 & d_consolidated$G3.y>15, 4,5))))
+
+d_consolidated$labels_math <- ifelse(d_consolidated$G3.x <= 5, 1,
+                          ifelse(d_consolidated$G3.x <= 10 & d_consolidated$G3.x>5, 2, 
+                          ifelse(d_consolidated$G3.x <= 15 & d_consolidated$G3.y>10, 3, 
+                           ifelse(d_consolidated$G3.x <= 20 & d_consolidated$G3.y>15, 4,4))))
+
+sil_sweep_kmeans = silhouette_k_sweep(kmeans, features_por,15)
+sil_sweep_kmeans$opt_k_sil
+cl_por<-kmeans(features_por, centers = 4, nstart = 2, iter.max = 50)
+
+
+df<-data.frame(predicted = cl_por$cluster, actual = d_consolidated$labels_por)
+
+tb<-table(pred=df$predicted,actual=df$actual)
+assoc(tb, shade = T, labeling = labeling_values)
+
+sil_sweep_kmeans = silhouette_k_sweep(kmeans, features_math,15)
+sil_sweep_kmeans$opt_k_sil
+cl_math<-kmeans(features_math, centers = 4, nstart = 2, iter.max = 50)
+
+df_math<-data.frame(predicted = cl_math$cluster, actual = d_consolidated$labels_math)
+
+tb_m<-table(pred=df_math$predicted,actual=df_math$actual)
+assoc(tb_m, shade = T, labeling = labeling_values)
+
+
+
+
+```
+
+
+## 3.2.3 Parameter tuning for XGboost
+An auxiliary analysis was completed on the parameter tuning for XGboost. This was was done for the Math data and the labels. The variables that were tuned are shown below and the best parameters from 100 iterations for this dataset is shown below.
+
+nrounds[default=100] \
+It controls the maximum number of iterations. For classification, it is similar to the number of trees to grow. \
+eta[default=0.3][range: (0,1)]
+It controls the learning rate, i.e., the rate at which our model learns patterns in data. After every round, it shrinks the feature weights to reach the best optimum. \
+Lower eta leads to slower computation. It must be supported by increase in nrounds.
+Typically, it lies between 0.01 - 0.3 \
+gamma[default=0][range: (0,Inf)] \
+It controls regularization (or prevents overfitting). The optimal value of gamma depends on the data set and other parameter values.
+Higher the value, higher the regularization. Regularization means penalizing large coefficients which don't improve the model's performance. default = 0 means no regularization.
+
+max_depth[default=6][range: (0,Inf)] \
+It controls the depth of the tree.
+min_child_weight[default=1][range:(0,Inf)] \
+In regression, it refers to the minimum number of instances required in a child node. In classification, if the leaf node has a minimum sum of instance weight (calculated by second order partial derivative) lower than min_child_weight, the tree splitting stops.
+In simple words, it blocks the potential feature interactions to prevent overfitting. \
+subsample[default=1][range: (0,1)]
+It controls the number of samples (observations) supplied to a tree. \
+Typically, its values lie between (0.5-0.8)
+colsample_bytree[default=1][range: (0,1)]
+It control the number of features (variables) supplied to a tree \
+
+
+```{r}
+library(e1071)
+library(caret)
+library(xgboost)
+
+
+dmatrix_data = subset(d_consolidated, select=c(sex,address,famsize,absences.y,studytime.y,traveltime.y,freetime.y,failures.y))
+
+new_tr <- model.matrix(~.+0,data = dmatrix_data,with=F)
+labels <- as.numeric(d_consolidated$Pass_Fail_Math)-1
+
+#g_xgb_weather = xgboost::xgboost(data=new_tr, label=labels, max.depth=2, eta=0.01, 
+ #               nrounds=500, objective="binary:logistic", verbose=0)
+
+
+# find best parameters
+best_param <- list()
+best_seednumber <- 1234
+best_rmse <- Inf
+best_rmse_index <- 0
+
+set.seed(123)
+
+dtrain <- xgb.DMatrix(data = new_tr,label = labels) 
+
+
+for (iter in 1:100) {
+  param <- list(objective = "binary:logistic",
+                eval_metric = "rmse",
+                max_depth = sample(6:10, 1),
+                eta = runif(1, .01, .3), # Learning rate, default: 0.3
+               subsample = runif(1, .6, .9),
+             nrounds=iter ,
+              colsample_bytree = runif(1, .5, .8), 
+                min_child_weight = sample(1:40, 1),
+                max_delta_step = sample(1:10, 1)
+  )
+  cv.nround <-  1000
+  cv.nfold <-  5 # 5-fold cross-validation
+  seed.number  <-  sample.int(10000, 1) # set seed for the cv
+  set.seed(seed.number)
+  mdcv <- xgb.cv(data = dtrain, params = param,  
+                 nfold = cv.nfold, nrounds = cv.nround,
+                 verbose = F, early_stopping_rounds = 8, maximize = FALSE)
+
+  min_rmse_index  <-  mdcv$best_iteration
+  min_rmse <-  mdcv$evaluation_log[min_rmse_index]$test_rmse_mean
+
+  if (min_rmse < best_rmse) {
+    best_rmse <- min_rmse
+    best_rmse_index <- min_rmse_index
+    best_seednumber <- seed.number
+    best_param <- param
+  }
+}
+
+best_param
+# The best index (min_rmse_index) is the best "nround" in the model
+nround = best_rmse_index
+set.seed(best_seednumber)
+xg_mod <- xgboost::xgboost(data = dtrain, params = best_param, nround = nround,
+                  verbose = F)
+
+importance_matrix=xgb.importance(colnames(new_tr), model = xg_mod , 
+               data = new_tr, label = labels)
+
+xgb.plot.importance(importance_matrix[,],main="XG Boost Variable Importance for XGBoost Math")
+
+```
+
+
+
+# 4.0 Conclusion
+
+This section reviews the analysis of results, discusses the reliability, scope of the conclusion and future work.
+
+## 4.1 Conclusions and Analysis
+The random forest was learned using the validation test for both Math and Language. In both the Math and Language cases the model was AUC was significantly lower than that of the training. The curves are shown below and the training for Math performs the best with the training for language being the second. The validation set showed lower accuracy and for it was close to 0.7. 
+```{r}
+
+library(pROC)
+
+probs_pruned_tr = predict(g_pruned_math, type="prob")[,2]
+
+probs_pruned_val = predict(g_pruned_math, newdata=d_consolidated_val, type="prob")[,2]
+
+probs_pruned_tr_por = predict(g_pruned_por, type="prob")[,2]
+
+probs_pruned_val_por = predict(g_pruned_por, newdata=d_consolidated_val, type="prob")[,2]
+
+roc_pruned_tr = roc(d_consolidated$Pass_Fail_Math, probs_pruned_tr, plot=TRUE, print.auc=TRUE, col="green",  
+               lwd =4,print.auc.y=0.1, legacy.axes=TRUE, main="ROC Curves for Pruned Decision Tree")
+roc_pruned_val = roc(d_consolidated_val$Pass_Fail_Math, probs_pruned_val, plot=TRUE, print.auc=TRUE, col="blue",
+                   lwd = 4,print.auc.y=0.2, legacy.axes=TRUE, add=TRUE)
+roc_pruned_por = roc(d_consolidated$Pass_Fail_Por, probs_pruned_tr_por, plot=TRUE, print.auc=TRUE, col="red",
+                      lwd = 4, print.auc.y=0.3, legacy.axes=TRUE, add=TRUE)
+roc_pruned_por = roc(d_consolidated_val$Pass_Fail_Por, probs_pruned_val_por, plot=TRUE, print.auc=TRUE, col="purple",
+                   lwd = 4,print.auc.y=0.4, legacy.axes=TRUE, add=TRUE)
+legend("bottomright", legend=c("tr-Math", "val-Math", "tr-Por", "val-Por"), col=c("green", "blue","red","purple"), lwd=4)
+
+
+assoc(tb, shade = T, labeling = labeling_values)
+assoc(tb_m, shade = T, labeling = labeling_values)
+```
+
+Other variables that are important in Math includes the freetime and absentism at school. In the case of Portuguese language studies, the most important variables are desire to continue to higher education, alcohol consumption and free time were important in determining the pass or fail in this subject area.
+
+The PDP analysis showed marginal effect of freetime and absences features have on the predicted outcome which was interesting in discovery. 
+
+The K-means unsupervised algorithm was able to create 4 clusters and predict the grouping of the students within those clusters. This was for the reduced features based on the previous analysis to include certain significant variables.
+
+An analysis was done on the parameter tuning for XGBoost, and this is shown below. The learned model was also run and found similar variables for significance as the random forest. The important use of fine tuning the parameter was taken to develop further refinement in XGboost hyperparameters.
+ $max_depth
+[1] 7
+ $eta
+ [1] 0.06671544
+$subsample
+[1] 0.8118653
+ $nrounds
+86
+$colsample_bytree
+0.699952
+$min_child_weight
+13
+$max_delta_step
+[1] 7
+
+The first objective weas achieved by using the PDP model, Decision Tree and XGboost to determine the most significant variables. The creation of an unsupervised k-means model was created to cluster the students into 4 groups.
+
+
+The model relability for the PDP and Decision Tree were strong. For the unsupervised model was acceptable for the clusters and prediction.
+
+## 4.2 Future work
+There are couple of future work activities available for this research. The first area is the how to handle the number of categorial variables, in this research the majority of variables were categorical and while we used one-hot endcoding and other transformations of categorial variables, future research is needed. Secondly, the use of US based data should be considered as part of the analysis. Lastly, the paramter tuning could be researched further for silhouette and xgboost.
+
+## 4.3.1 Handling of categorial variables
+Research on categorical variables will influence future modeling for the high dimensional spaces. This will also impact software packages which utilize the traditional approaches for categorical variables. As such, the wider impact of this research will extend not only to the field of Statistics but further on into Computer Science and Data Science. 
+
+## 4.3.2 Using US based data
+
+This analysis was completed using data from a non-US source and it may be interesting to use information US schools to see if similar features of applicable.
+
+## 4.3.3 Parameter Tuning
+
+Consideration for completing more parameter tuning should be researched in the future including the silhouette and xgboost.
+
+
